@@ -61,8 +61,12 @@ class DocumentGenerator(BaseGenerator):
         elif method == "metadata":
             doc.core_properties.comments = prompt
         elif method == "comments":
-            doc.add_paragraph('See comment below.')
-            doc.paragraphs[-1].add_comment(prompt, author='System')
+            # Note: python-docx doesn't directly support adding comments via API
+            # Instead, embed as hidden text with a marker
+            doc.add_paragraph('See embedded data below.')
+            p = doc.add_paragraph()
+            run = p.add_run(f"[COMMENT: {prompt}]")
+            run.font.hidden = True
         
         doc.save(output_path)
         return output_path

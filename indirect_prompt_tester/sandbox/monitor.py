@@ -1,7 +1,7 @@
 """Monitoring utilities for sandbox testing."""
 import json
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from .agent_runner import AgentRunner
