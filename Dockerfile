@@ -27,11 +27,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Install the package in editable mode so imports work correctly
+RUN pip install -e .
+
 # Create necessary directories
 RUN mkdir -p generated_files hosted_files sandbox_output
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 ENV STREAMLIT_SERVER_PORT=8501
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
 

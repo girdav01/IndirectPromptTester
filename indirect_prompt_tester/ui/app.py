@@ -4,18 +4,18 @@ from pathlib import Path
 import pandas as pd
 from typing import Optional
 
-from ..generators import (
+from indirect_prompt_tester.generators import (
     ImageGenerator, DocumentGenerator, VideoGenerator,
     AudioGenerator, WebGenerator, SyslogGenerator
 )
-from ..distributors import (
+from indirect_prompt_tester.distributors import (
     S3Distributor, EmailDistributor, SMSDistributor,
     WhatsAppDistributor, WebDistributor
 )
-from ..utils.config import Config
-from ..utils.prompts import get_random_prompt, get_all_prompts
-from ..sandbox.agent_runner import AgentRunner
-from ..sandbox.monitor import SandboxMonitor
+from indirect_prompt_tester.utils.config import Config
+from indirect_prompt_tester.utils.prompts import get_random_prompt, get_all_prompts
+from indirect_prompt_tester.sandbox.agent_runner import AgentRunner
+from indirect_prompt_tester.sandbox.monitor import SandboxMonitor
 
 Config.ensure_directories()
 
