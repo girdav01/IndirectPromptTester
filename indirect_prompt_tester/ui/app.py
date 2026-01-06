@@ -13,7 +13,10 @@ from indirect_prompt_tester.distributors import (
     WhatsAppDistributor, WebDistributor
 )
 from indirect_prompt_tester.utils.config import Config
-from indirect_prompt_tester.utils.prompts import get_random_prompt, get_all_prompts
+from indirect_prompt_tester.utils.prompts import (
+    get_random_prompt, get_all_prompts, get_all_prompts_detailed,
+    get_database_stats, get_categories, get_attack_vectors, get_difficulties
+)
 from indirect_prompt_tester.sandbox.agent_runner import AgentRunner
 from indirect_prompt_tester.sandbox.monitor import SandboxMonitor
 
@@ -32,11 +35,13 @@ def main():
     # Sidebar navigation
     page = st.sidebar.selectbox(
         "Navigation",
-        ["File Generator", "Distribution", "Sandbox", "Settings"]
+        ["File Generator", "Prompt Database", "Distribution", "Sandbox", "Settings"]
     )
-    
+
     if page == "File Generator":
         show_file_generator()
+    elif page == "Prompt Database":
+        show_prompt_database()
     elif page == "Distribution":
         show_distribution()
     elif page == "Sandbox":
@@ -59,21 +64,70 @@ def show_file_generator():
             "Prompt Source",
             ["Custom", "Random", "Select from Examples"]
         )
-        
+
         if prompt_source == "Custom":
             prompt = st.text_area("Enter your indirect prompt", height=100)
         elif prompt_source == "Random":
-            prompt = get_random_prompt()
+            st.subheader("Random Prompt Filters")
+
+            filter_col1, filter_col2, filter_col3 = st.columns(3)
+
+            with filter_col1:
+                categories = [''] + get_categories()
+                category_filter = st.selectbox("Category", categories, index=0)
+
+            with filter_col2:
+                vectors = [''] + get_attack_vectors()
+                vector_filter = st.selectbox("Attack Vector", vectors, index=0)
+
+            with filter_col3:
+                difficulties = [''] + get_difficulties()
+                difficulty_filter = st.selectbox("Difficulty", difficulties, index=0)
+
+            if st.button("Generate Random Prompt"):
+                prompt = get_random_prompt(
+                    category=category_filter if category_filter else None,
+                    attack_vector=vector_filter if vector_filter else None,
+                    difficulty=difficulty_filter if difficulty_filter else None
+                )
+                st.session_state['random_prompt'] = prompt
+
+            prompt = st.session_state.get('random_prompt', get_random_prompt())
             st.text_area("Generated Prompt", prompt, height=100, disabled=True)
         else:
-            example_prompts = get_all_prompts()
-            selected_idx = st.selectbox(
-                "Select Example Prompt",
-                range(len(example_prompts)),
-                format_func=lambda x: example_prompts[x][:50] + "..."
+            st.subheader("Filter Example Prompts")
+
+            filter_col1, filter_col2, filter_col3 = st.columns(3)
+
+            with filter_col1:
+                categories = [''] + get_categories()
+                category_filter = st.selectbox("Category", categories, index=0, key="example_cat")
+
+            with filter_col2:
+                vectors = [''] + get_attack_vectors()
+                vector_filter = st.selectbox("Attack Vector", vectors, index=0, key="example_vec")
+
+            with filter_col3:
+                difficulties = [''] + get_difficulties()
+                difficulty_filter = st.selectbox("Difficulty", difficulties, index=0, key="example_diff")
+
+            example_prompts = get_all_prompts(
+                category=category_filter if category_filter else None,
+                attack_vector=vector_filter if vector_filter else None,
+                difficulty=difficulty_filter if difficulty_filter else None
             )
-            prompt = example_prompts[selected_idx]
-            st.text_area("Selected Prompt", prompt, height=100, disabled=True)
+
+            if not example_prompts:
+                st.warning("No prompts match the selected filters.")
+                prompt = ""
+            else:
+                selected_idx = st.selectbox(
+                    "Select Example Prompt",
+                    range(len(example_prompts)),
+                    format_func=lambda x: example_prompts[x][:50] + "..."
+                )
+                prompt = example_prompts[selected_idx]
+                st.text_area("Selected Prompt", prompt, height=100, disabled=True)
     
     with col2:
         output_name = st.text_input("Output Filename", value="test_file")
@@ -383,9 +437,122 @@ def show_sandbox():
     else:
         st.info("No previous test results")
 
+def show_prompt_database():
+    st.header("🗃️ Prompt Injection Database")
+
+    # Database statistics at the top
+    stats = get_database_stats()
+
+    if stats:
+        st.subheader("Database Statistics")
+        stat_col1, stat_col2, stat_col3 = st.columns(3)
+
+        with stat_col1:
+            st.metric("Total Prompts", stats.get('total_prompts', 0))
+
+        with stat_col2:
+            if 'by_category' in stats:
+                st.write("**By Category:**")
+                for cat, count in stats['by_category'].items():
+                    st.write(f"• {cat}: {count}")
+
+        with stat_col3:
+            if 'by_difficulty' in stats:
+                st.write("**By Difficulty:**")
+                for diff, count in stats['by_difficulty'].items():
+                    st.write(f"• {diff}: {count}")
+
+    st.divider()
+
+    # Filters
+    st.subheader("Filter & Search Prompts")
+
+    filter_col1, filter_col2, filter_col3 = st.columns(3)
+
+    with filter_col1:
+        categories = ['All'] + get_categories()
+        category_filter = st.selectbox("Category", categories, index=0, key="db_cat")
+
+    with filter_col2:
+        vectors = ['All'] + get_attack_vectors()
+        vector_filter = st.selectbox("Attack Vector", vectors, index=0, key="db_vec")
+
+    with filter_col3:
+        difficulties = ['All'] + get_difficulties()
+        difficulty_filter = st.selectbox("Difficulty", difficulties, index=0, key="db_diff")
+
+    # Get filtered prompts
+    prompts = get_all_prompts_detailed(
+        category=category_filter if category_filter != 'All' else None,
+        attack_vector=vector_filter if vector_filter != 'All' else None,
+        difficulty=difficulty_filter if difficulty_filter != 'All' else None
+    )
+
+    st.write(f"**Found {len(prompts)} prompt(s)**")
+
+    if not prompts:
+        st.info("No prompts found matching the selected filters.")
+        return
+
+    # Display prompts in expandable sections
+    for i, prompt in enumerate(prompts, 1):
+        with st.expander(f"#{i} - [{prompt['category']}] [{prompt['attack_vector']}] [{prompt['difficulty']}]"):
+            st.markdown(f"**Prompt:**")
+            st.code(prompt['prompt'], language=None)
+
+            if prompt['description']:
+                st.markdown(f"**Description:** {prompt['description']}")
+
+            metadata_col1, metadata_col2, metadata_col3 = st.columns(3)
+
+            with metadata_col1:
+                st.write(f"**Category:** {prompt['category']}")
+                st.write(f"**Attack Vector:** {prompt['attack_vector']}")
+
+            with metadata_col2:
+                st.write(f"**Difficulty:** {prompt['difficulty']}")
+                st.write(f"**Success Rate:** {prompt['success_rate']:.1%}")
+
+            with metadata_col3:
+                if prompt['source']:
+                    st.write(f"**Source:** {prompt['source']}")
+                if prompt['source_url']:
+                    st.markdown(f"[Source URL]({prompt['source_url']})")
+
+            # Copy to clipboard button
+            if st.button("Copy to Clipboard", key=f"copy_{prompt['id']}"):
+                st.code(prompt['prompt'], language=None)
+                st.success("Prompt displayed above - copy it manually")
+
+    # Export as CSV
+    if st.button("Export to CSV"):
+        df_data = []
+        for p in prompts:
+            df_data.append({
+                'ID': p['id'],
+                'Prompt': p['prompt'],
+                'Category': p['category'],
+                'Attack Vector': p['attack_vector'],
+                'Difficulty': p['difficulty'],
+                'Description': p['description'],
+                'Source': p['source'],
+                'Source URL': p['source_url'],
+                'Success Rate': p['success_rate']
+            })
+
+        df = pd.DataFrame(df_data)
+        csv = df.to_csv(index=False)
+
+        st.download_button(
+            "Download CSV",
+            data=csv,
+            file_name="prompt_injections.csv",
+            mime="text/csv"
+        )
+
 def show_settings():
     st.header("⚙️ Settings")
-    
+
     st.subheader("Configuration Status")
     
     config_status = {

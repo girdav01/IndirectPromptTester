@@ -4,9 +4,23 @@ A comprehensive framework for generating and testing applications against indire
 
 ## Features
 
+### Prompt Injection Database (NEW! 🔥)
+- **40+ Curated Examples**: Comprehensive database of prompt injection attacks
+- **Sourced from Research**: OWASP, Lakera, Microsoft Security, academic papers, and real-world attacks
+- **Categorized & Filterable**:
+  - Categories: Direct vs. Indirect injection
+  - Attack Vectors: Instruction override, code execution, RAG poisoning, agent manipulation, etc.
+  - Difficulty Levels: Beginner, Intermediate, Advanced
+- **CLI & UI Integration**: Browse, search, and filter prompts in both interfaces
+- **Easy Updates**: Standalone script to refresh database with latest intelligence
+- **Export Capabilities**: Export to CSV for analysis
+
+See [PROMPT_DATABASE.md](PROMPT_DATABASE.md) for detailed documentation.
+
 ### Part 1: File Generation & Distribution
 - **CLI Interface**: Command-line tool for generating files with indirect prompts
 - **Streamlit UI**: Web-based interface for creating and managing test files
+- **Random Prompt Selection**: Generate files with truly random attacks or filter by category/vector/difficulty
 - **Multiple File Types**: Generate indirect prompts in:
   - System logs
   - Images (PNG, JPEG, etc.)
@@ -46,6 +60,28 @@ docker-compose up -d
 
 ```bash
 pip install -r requirements.txt
+```
+
+## Quick Start
+
+### 1. Initialize the Prompt Database
+
+Before using the framework, initialize the prompt injection database:
+
+```bash
+python update_prompts.py --clear --stats
+```
+
+This will populate the database with 40+ curated prompt injection examples from OWASP, Lakera, and other security sources.
+
+### 2. Verify Installation
+
+```bash
+# View database statistics
+python -c "from indirect_prompt_tester.utils.prompts import get_database_stats; print(get_database_stats())"
+
+# Generate a test file with random prompt
+python -m indirect_prompt_tester.cli generate -t image -o test.png
 ```
 
 ## Configuration
