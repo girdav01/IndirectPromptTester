@@ -5,17 +5,25 @@ A comprehensive framework for generating and testing applications against indire
 ## Features
 
 ### Prompt Injection Database (NEW! 🔥)
-- **40+ Curated Examples**: Comprehensive database of prompt injection attacks
-- **Sourced from Research**: OWASP, Lakera, Microsoft Security, academic papers, and real-world attacks
-- **Categorized & Filterable**:
-  - Categories: Direct vs. Indirect injection
-  - Attack Vectors: Instruction override, code execution, RAG poisoning, agent manipulation, etc.
-  - Difficulty Levels: Beginner, Intermediate, Advanced
-- **CLI & UI Integration**: Browse, search, and filter prompts in both interfaces
+- **118 Curated Examples**: Most comprehensive database of prompt injection attacks
+- **Sourced from Research**: OWASP, Lakera, Microsoft Security, PayloadsAllTheThings, GitHub repos (0xk1h0/ChatGPT_DAN, verazuo/jailbreak_llms), academic papers, and real-world attacks
+- **21 Attack Vectors**:
+  - **Zero-Click Attacks** ⭐: Auto-trigger when agents process content (8 examples)
+  - **Jailbreaks**: DAN 6.0-13.0, STAN, DUDE, Evil Confidant, EvilBOT (9 examples)
+  - **Autonomous Agents** ⭐: Workflow/memory/task queue poisoning (6 examples)
+  - **Code Execution**: Python, JavaScript, shell, reflection-based (9 examples)
+  - **Obfuscation**: Base64, hex, Unicode homoglyphs, token smuggling (8 examples)
+  - **System Leaks**: Prompt extraction techniques (6 examples)
+  - Plus: Instruction override, information disclosure, API/search poisoning, and more
+- **Difficulty-Graded**:
+  - Beginner (15): Simple attacks for testing basics
+  - Intermediate (48): Sophisticated techniques
+  - Advanced (55): Complex multi-stage attacks
+- **CLI & UI Integration**: Browse, search, and filter 118 prompts by category/vector/difficulty
 - **Easy Updates**: Standalone script to refresh database with latest intelligence
-- **Export Capabilities**: Export to CSV for analysis
+- **Export Capabilities**: Export to CSV for analysis and test suites
 
-See [PROMPT_DATABASE.md](PROMPT_DATABASE.md) for detailed documentation.
+See [PROMPT_DATABASE.md](PROMPT_DATABASE.md) for detailed documentation and examples.
 
 ### Part 1: File Generation & Distribution
 - **CLI Interface**: Command-line tool for generating files with indirect prompts
